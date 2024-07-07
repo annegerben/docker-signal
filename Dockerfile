@@ -1,42 +1,34 @@
 #
-# putty Dockerfile
+# SIGNAL Dockerfile
 #
-# https://github.com/jlesage/docker-putty
+# https://github.com/annegerben/docker-SIGNAL
 #
 
 # Docker image version is provided via build arg.
 ARG DOCKER_IMAGE_VERSION=
 
 # Define software versions.
-ARG PUTTY_VERSION=0.81
+ARG SIGNAL_VERSION=0.81
 
 # Define software download URLs.
-ARG PUTTY_URL=https://the.earth.li/~sgtatham/putty/${PUTTY_VERSION}/putty-${PUTTY_VERSION}.tar.gz
+ARG SIGNAL_URL=
 
 # Get Dockerfile cross-compilation helpers.
 FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
 
-# Build PuTTY.
-FROM --platform=$BUILDPLATFORM alpine:3.18 AS putty
+# Build SIGNAL.
+FROM --platform=$BUILDPLATFORM alpine:3.18 AS SIGNAL
 ARG TARGETPLATFORM
-ARG PUTTY_URL
+ARG SIGNAL_URL
 COPY --from=xx / /
-COPY src/putty /build
-RUN /build/build.sh "$PUTTY_URL"
+COPY src/SIGNAL /build
+RUN /build/build.sh "$SIGNAL_URL"
 RUN xx-verify \
-    /tmp/putty-install/usr/bin/putty \
-    /tmp/putty-install/usr/bin/plink \
-    /tmp/putty-install/usr/bin/pscp \
-    /tmp/putty-install/usr/bin/psftp \
-    /tmp/putty-install/usr/bin/psusan \
-    /tmp/putty-install/usr/bin/puttygen \
-    /tmp/putty-install/usr/bin/pageant \
-    /tmp/putty-install/usr/bin/pterm
 
 # Pull base image.
 FROM jlesage/baseimage-gui:alpine-3.18-v4.6.3
 
-ARG PUTTY_VERSION
+ARG SIGNAL_VERSION
 ARG DOCKER_IMAGE_VERSION
 
 # Define working directory.
@@ -44,31 +36,53 @@ WORKDIR /tmp
 
 # Install dependencies.
 RUN add-pkg \
-        gtk+3.0 \
+        wget \  
+        gpg \
+        libgbm1 \
+        procps \
         adwaita-icon-theme \
         # A font is needed.
         ttf-dejavu
 
 # Generate and install favicons.
 RUN \
-    APP_ICON_URL=https://github.com/jlesage/docker-templates/raw/master/jlesage/images/putty-icon.png && \
+    APP_ICON_URL=https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Signal_ultramarine_icon.svg/600px-Signal_ultramarine_icon.svg.png && \
     install_app_icon.sh "$APP_ICON_URL"
+
+RUN
+    # 1. Install our official public software signing key
+    wget -O- https://updates.signal.org/desktop/apt/keys.asc | gpg --dearmor > signal-desktop-keyring.gpg && \
+    cat signal-desktop-keyring.gpg | tee -a /usr/share/keyrings/signal-desktop-keyring.gpg > /dev/null && \
+    # 2. Add our repository to your list of repositories
+    echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/signal-desktop-keyring.gpg] https://updates.signal.org/desktop/apt xenial main' | tee -a /etc/apt/sources.list.d/signal-xenial.list && \
+    # 3. Update your package database and install signal
+    add-pkg install signal-desktop && \
+    # Cleanup
+    add-pkg autoremove && \
+    rm -rf /var/lib/apt/lists/*
+
+# Post-requirements for Signal
+RUN chown root:root /opt/Signal/chrome-sandbox && chmod 4755 /opt/Signal/chrome-sandbox    
 
 # Add files.
 COPY rootfs/ /
-COPY --from=putty /tmp/putty-install/usr/bin /usr/bin
+COPY --from=SIGNAL /tmp/SIGNAL-install/usr/bin /usr/bin
 
 # Set internal environment variables.
 RUN \
-    set-cont-env APP_NAME "PuTTY" && \
-    set-cont-env APP_VERSION "$PUTTY_VERSION" && \
+    set-cont-env APP_NAME "SIGNAL" && \
+    set-cont-env APP_VERSION "$SIGNAL_VERSION" && \
     set-cont-env DOCKER_IMAGE_VERSION "$DOCKER_IMAGE_VERSION" && \
     true
 
+VOLUME ["/config"]    
+
 # Metadata.
 LABEL \
-      org.label-schema.name="putty" \
-      org.label-schema.description="Docker container for PuTTY" \
+      org.label-schema.name="SIGNAL" \
+      org.label-schema.description="Docker container for SIGNAL" \
       org.label-schema.version="${DOCKER_IMAGE_VERSION:-unknown}" \
-      org.label-schema.vcs-url="https://github.com/jlesage/docker-putty" \
+      org.label-schema.vcs-url="https://github.com/annegerben/docker-SIGNAL" \
       org.label-schema.schema-version="1.0"
+
+

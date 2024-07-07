@@ -18,10 +18,10 @@ function log {
     echo ">>> $*"
 }
 
-PUTTY_URL="$1"
+SIGNAL_URL="$1"
 
-if [ -z "$PUTTY_URL" ]; then
-    log "ERROR: PuTTY URL missing."
+if [ -z "$SIGNAL_URL" ]; then
+    log "ERROR: SIGNAL URL missing."
     exit 1
 fi
 
@@ -48,18 +48,18 @@ xx-apk --no-cache --no-scripts add \
 # Download sources.
 #
 
-log "Downloading PuTTY package..."
-mkdir /tmp/putty
-curl -# -L -f ${PUTTY_URL} | tar xz --strip 1 -C /tmp/putty
+log "Downloading SIGNAL package..."
+mkdir /tmp/SIGNAL
+curl -# -L -f ${SIGNAL_URL} | tar xz --strip 1 -C /tmp/SIGNAL
 
 #
-# Compile PuTTY
+# Compile SIGNAL
 #
 
-log "Configuring PuTTY..."
+log "Configuring SIGNAL..."
 (
-    mkdir /tmp/putty/build && \
-    cd /tmp/putty/build && \
+    mkdir /tmp/SIGNAL/build && \
+    cd /tmp/SIGNAL/build && \
     # shared-mime-info.pc is installed under /usr/share/pkgconfig.
     PKG_CONFIG_PATH=/$(xx-info)/usr/share/pkgconfig cmake \
         $(xx-clang --print-cmake-defines) \
@@ -73,14 +73,14 @@ log "Configuring PuTTY..."
         ..
 )
 
-log "Patching PuTTY..."
-find /tmp/putty
-patch -d /tmp/putty -p1 < "$SCRIPT_DIR"/conf-window-position.patch
-patch -d /tmp/putty -p1 < "$SCRIPT_DIR"/ctrl-right-menu.patch
-patch -d /tmp/putty -p1 < "$SCRIPT_DIR"/restart-putty-button.patch
+log "Patching SIGNAL..."
+find /tmp/SIGNAL
+patch -d /tmp/SIGNAL -p1 < "$SCRIPT_DIR"/conf-window-position.patch
+patch -d /tmp/SIGNAL -p1 < "$SCRIPT_DIR"/ctrl-right-menu.patch
+patch -d /tmp/SIGNAL -p1 < "$SCRIPT_DIR"/restart-SIGNAL-button.patch
 
-log "Compiling PuTTY..."
-make -C /tmp/putty/build -j$(nproc)
+log "Compiling SIGNAL..."
+make -C /tmp/SIGNAL/build -j$(nproc)
 
-log "Installing PuTTY..."
-DESTDIR=/tmp/putty-install make -C /tmp/putty/build install
+log "Installing SIGNAL..."
+DESTDIR=/tmp/SIGNAL-install make -C /tmp/SIGNAL/build install

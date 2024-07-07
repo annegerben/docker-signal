@@ -1,4 +1,4 @@
-Implement a "Restart PuTTY session" button.  This button sits at the top of the
+Implement a "Restart SIGNAL session" button.  This button sits at the top of the
 terminal window.
 --- a/unix/window.c	2022-11-07 22:43:12.703088650 -0500
 +++ b/unix/window.c	2022-11-08 14:31:11.286951866 -0500
@@ -6,7 +6,7 @@ terminal window.
      gboolean drawing_area_got_size, drawing_area_realised;
      gboolean drawing_area_setup_needed;
      bool drawing_area_setup_called;
-+#if 1 // RESTART_PUTTY_BUTTON
++#if 1 // RESTART_SIGNAL_BUTTON
 +    GtkBox *vbox;
 +    GtkWidget *restartsessionbtn;
 +#endif
@@ -17,11 +17,11 @@ terminal window.
          gtk_widget_destroy(inst->window);
  }
  
-+#if 1 // RESTART_PUTTY_BUTTON
-+void restart_putty_session_button_clicked(GtkWidget *widget, gpointer data)
++#if 1 // RESTART_SIGNAL_BUTTON
++void restart_SIGNAL_session_button_clicked(GtkWidget *widget, gpointer data)
 +{
-+    g_print("Restarting PuTTY...\n");
-+    system("/usr/bin/restart_putty.sh");
++    g_print("Restarting SIGNAL...\n");
++    system("/usr/bin/restart_SIGNAL.sh");
 +}
 +#endif
 +
@@ -32,9 +32,9 @@ terminal window.
      if (!conf_get_bool(inst->conf, CONF_scrollbar_on_left))
          gtk_box_pack_start(inst->hbox, inst->sbar, false, false, 0);
  
-+#if 1 // RESTART_PUTTY_BUTTON
++#if 1 // RESTART_SIGNAL_BUTTON
 +    /* Create the button. */
-+    inst->restartsessionbtn = gtk_button_new_with_label("Restart PuTTY session");
++    inst->restartsessionbtn = gtk_button_new_with_label("Restart SIGNAL session");
 +    g_object_set(inst->restartsessionbtn, "halign", GTK_ALIGN_END, NULL);
 +    g_object_set(inst->restartsessionbtn, "margin-top", 10, NULL);
 +    g_object_set(inst->restartsessionbtn, "margin-bottom", 10, NULL);
@@ -48,7 +48,7 @@ terminal window.
 +    gtk_widget_show(GTK_WIDGET(inst->vbox));
 +#endif
 +
-+#if 1 // RESTART_PUTTY_BUTTON
++#if 1 // RESTART_SIGNAL_BUTTON
 +    gtk_container_add(GTK_CONTAINER(inst->window), GTK_WIDGET(inst->vbox));
 +#else
      gtk_container_add(GTK_CONTAINER(inst->window), GTK_WIDGET(inst->hbox));
@@ -60,9 +60,9 @@ terminal window.
      g_signal_connect(G_OBJECT(inst->imc), "commit",
                       G_CALLBACK(input_method_commit_event), inst);
  #endif
-+#if 1 // RESTART_PUTTY_BUTTON
++#if 1 // RESTART_SIGNAL_BUTTON
 +    g_signal_connect(G_OBJECT(inst->restartsessionbtn), "clicked",
-+                     G_CALLBACK(restart_putty_session_button_clicked), inst);
++                     G_CALLBACK(restart_SIGNAL_session_button_clicked), inst);
 +#endif
      if (conf_get_bool(inst->conf, CONF_scrollbar))
          g_signal_connect(G_OBJECT(inst->sbar_adjust), "value_changed",
