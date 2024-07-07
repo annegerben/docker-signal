@@ -37,6 +37,7 @@ apk --no-cache add \
     cmake \
     pkgconf \
     perl \
+    wget \
 
 xx-apk --no-cache --no-scripts add \
     musl-dev \
