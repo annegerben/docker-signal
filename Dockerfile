@@ -35,8 +35,7 @@ ARG DOCKER_IMAGE_VERSION
 WORKDIR /tmp
 
 # Install dependencies.
-RUN add-pkg install\
-        wget \  
+RUN add-pkg install wget\
         gpg \
         libgbm1 \
         procps \
